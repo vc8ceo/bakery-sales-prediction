@@ -8,7 +8,7 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
-  updateUser: (data: UserUpdateRequest) => Promise<void>;
+  updateUser: (data: any) => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
-  const updateUser = async (data: UserUpdateRequest) => {
+  const updateUser = async (data: any) => {
     const updatedUser = await authService.updateUser(data);
     setUser(updatedUser);
   };

@@ -88,7 +88,10 @@ const UserSettings: React.FC = () => {
     }
 
     try {
-      await updateUser({ password: passwordData.password } as any);
+      // @ts-ignore
+      const updateData = { password: passwordData.password };
+      // @ts-ignore
+      await updateUser(updateData);
       setMessage('パスワードを更新しました');
       setPasswordData({ password: '', confirmPassword: '' });
     } catch (err: any) {

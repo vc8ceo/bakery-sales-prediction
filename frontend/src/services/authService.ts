@@ -91,7 +91,7 @@ class AuthService {
   }
 
   // ユーザー情報を更新
-  async updateUser(data: UserUpdateRequest): Promise<User> {
+  async updateUser(data: any): Promise<User> {
     const response = await fetch(`${this.API_BASE_URL}/api/auth/me`, {
       method: 'PUT',
       headers: {

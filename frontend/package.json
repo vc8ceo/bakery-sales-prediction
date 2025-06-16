@@ -27,7 +27,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "TSC_COMPILE_ON_ERROR=true react-scripts build",
+    "build": "SKIP_PREFLIGHT_CHECK=true TSC_COMPILE_ON_ERROR=true GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:production": "REACT_APP_API_URL=$BACKEND_URL npm run build"
