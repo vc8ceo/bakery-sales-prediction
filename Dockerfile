@@ -35,7 +35,11 @@ COPY --from=frontend-builder /app/frontend/build ./static
 RUN mkdir -p models/users models/trained
 
 # アプリケーションを起動
-EXPOSE $PORT
+EXPOSE 8000
 
-# Railwayでの起動コマンド（環境変数PORTを使用）
-CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
+# 起動スクリプトを作成
+RUN echo '#!/bin/bash\nuvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}' > /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Railwayでの起動コマンド
+CMD ["/app/start.sh"]
