@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パン屋売上予測システム - テストページ</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            color: #666;
+            margin-top: 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        input[type="date"], input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥖 パン屋売上予測システム - 機能テスト</h1>
+        
+        <!-- API接続テスト -->
+        <div class="test-section">
+            <h2>1. API接続テスト</h2>
+            <button onclick="testConnection()">接続テスト</button>
+            <button onclick="getModelStatus()">モデル状況確認</button>
+            <div id="connectionResult" class="result"></div>
+        </div>
+
+        <!-- データアップロードテスト -->
+        <div class="test-section">
+            <h2>2. データアップロードテスト</h2>
+            <input type="file" id="csvFile" accept=".csv" />
+            <button onclick="uploadData()">データアップロード</button>
+            <div id="uploadResult" class="result"></div>
+        </div>
+
+        <!-- モデル訓練テスト -->
+        <div class="test-section">
+            <h2>3. モデル訓練テスト</h2>
+            <button onclick="trainModel()">モデル訓練開始</button>
+            <div id="trainResult" class="result"></div>
+        </div>
+
+        <!-- 予測テスト -->
+        <div class="test-section">
+            <h2>4. 予測テスト</h2>
+            <input type="date" id="predictionDate" value="2025-06-15" />
+            <input type="text" id="postalCode" placeholder="郵便番号" value="1000001" />
+            <button onclick="makePrediction()">予測実行</button>
+            <div id="predictionResult" class="result"></div>
+        </div>
+
+        <!-- データ統計テスト -->
+        <div class="test-section">
+            <h2>5. データ統計テスト</h2>
+            <button onclick="getDataStats()">データ統計取得</button>
+            <div id="statsResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+
+        // 結果表示ヘルパー
+        function showResult(elementId, data, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `result ${type}`;
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        // 1. API接続テスト
+        async function testConnection() {
+            try {
+                showResult('connectionResult', '🔄 接続テスト中...', 'info');
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                showResult('connectionResult', `✅ 接続成功!\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult('connectionResult', `❌ 接続失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // モデル状況確認
+        async function getModelStatus() {
+            try {
+                showResult('connectionResult', '🔄 モデル状況確認中...', 'info');
+                const response = await fetch(`${API_BASE}/model-status`);
+                const data = await response.json();
+                showResult('connectionResult', `📊 モデル状況:\n${JSON.stringify(data, null, 2)}`, 'info');
+            } catch (error) {
+                showResult('connectionResult', `❌ 状況確認失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. データアップロード
+        async function uploadData() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showResult('uploadResult', '❌ ファイルが選択されていません', 'error');
+                return;
+            }
+
+            try {
+                showResult('uploadResult', '🔄 データアップロード中...', 'info');
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_BASE}/upload-data`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('uploadResult', `✅ アップロード成功!\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showResult('uploadResult', `❌ アップロード失敗: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('uploadResult', `❌ アップロードエラー: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. モデル訓練
+        async function trainModel() {
+            try {
+                showResult('trainResult', '🔄 モデル訓練開始...', 'info');
+                const response = await fetch(`${API_BASE}/train-model`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('trainResult', `✅ 訓練完了!\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showResult('trainResult', `❌ 訓練失敗: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('trainResult', `❌ 訓練エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // 4. 予測実行
+        async function makePrediction() {
+            const date = document.getElementById('predictionDate').value;
+            const postalCode = document.getElementById('postalCode').value;
+
+            if (!date) {
+                showResult('predictionResult', '❌ 日付が選択されていません', 'error');
+                return;
+            }
+
+            try {
+                showResult('predictionResult', '🔄 予測実行中...', 'info');
+                const response = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date: date,
+                        postal_code: postalCode
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('predictionResult', `✅ 予測完了!\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showResult('predictionResult', `❌ 予測失敗: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('predictionResult', `❌ 予測エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. データ統計取得
+        async function getDataStats() {
+            try {
+                showResult('statsResult', '🔄 統計情報取得中...', 'info');
+                const response = await fetch(`${API_BASE}/data-stats`);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('statsResult', `📊 統計情報:\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    showResult('statsResult', `❌ 統計取得失敗: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult('statsResult', `❌ 統計エラー: ${error.message}`, 'error');
+            }
+        }
+
+        // ページ読み込み時に接続テスト
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

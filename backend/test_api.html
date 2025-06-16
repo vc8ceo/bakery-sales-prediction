@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Data Stats API Test</h1>
+    <button onclick="testAPI()">Test Data Stats API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Model Status APIをテスト
+                const statusResponse = await fetch('http://127.0.0.1:8000/model-status');
+                const statusData = await statusResponse.json();
+                
+                // Data Stats APIをテスト
+                const statsResponse = await fetch('http://127.0.0.1:8000/data-stats');
+                
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    resultDiv.innerHTML = `
+                        <h2>Model Status:</h2>
+                        <pre>${JSON.stringify(statusData, null, 2)}</pre>
+                        <h2>Data Stats:</h2>
+                        <pre>${JSON.stringify(statsData, null, 2)}</pre>
+                    `;
+                } else {
+                    const errorText = await statsResponse.text();
+                    resultDiv.innerHTML = `
+                        <h2>Model Status:</h2>
+                        <pre>${JSON.stringify(statusData, null, 2)}</pre>
+                        <h2>Error:</h2>
+                        <p>Status: ${statsResponse.status}</p>
+                        <p>Error: ${errorText}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

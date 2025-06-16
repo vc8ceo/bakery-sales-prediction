@@ -1,0 +1,102 @@
+# バイナリファイル
+*.bat
+*.exe
+
+# Python仮想環境
+venv/
+venv_*/
+env/
+backend/view_data/lib/
+backend/view_data/Scripts/
+backend/view_data/pyvenv.cfg
+backend/venv/
+backend/venv_*/
+backend/env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.cache/
+*.tgz
+*.tar.gz
+
+# 開発環境設定
+.specstory/
+.cursorindexingignore/
+.cursorignore/
+.cursor/
+.vscode/
+.idea/
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# ログファイル
+*.log
+
+# 環境変数ファイル
+.env
+.env.local
+.env.production
+.env.development
+
+# データベースファイル
+*.db
+*.sqlite
+*.sqlite3
+
+# モデルファイル（大容量のため）
+*.pkl
+*.joblib
+models/trained/*
+models/users/*
+!models/trained/.gitkeep
+!models/users/.gitkeep
+
+# フロントエンドビルド
+frontend/build/
+frontend/dist/
+
+# バックエンド静的ファイル
+backend/static/
+
+# アップロードファイル
+uploads/
+temp/
+
+# セキュリティ関連
+.secrets
+secrets/
+*.key
+*.crt
+*.pem
+
+# Railway特有
+.railway/
+
+# テストカバレッジ
+coverage/
+.coverage
+.pytest_cache/
+.nyc_output/
+
+# エラーログ
+error.log
+debug.log
+
+# 一時ファイル
+*.tmp
+*.temp
+.tmp/

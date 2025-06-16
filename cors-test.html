@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test</title>
+</head>
+<body>
+    <h1>API接続テスト</h1>
+    <button onclick="testAPI()">APIテスト実行</button>
+    <button onclick="testModelStatus()">モデル状況確認</button>
+    <div id="result"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>テスト実行中...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<p style="color: green;">✅ API接続成功: ${JSON.stringify(data)}</p>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ API接続失敗: ${error.message}</p>`;
+                console.error('API Error:', error);
+            }
+        }
+        
+        async function testModelStatus() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>モデル状況確認中...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/model-status`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<p style="color: green;">✅ モデル状況取得成功: ${JSON.stringify(data, null, 2)}</p>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">❌ モデル状況取得失敗: ${error.message}</p>`;
+                console.error('Model Status Error:', error);
+            }
+        }
+        
+        // ページ読み込み時に自動テスト
+        window.onload = function() {
+            console.log('ページが読み込まれました。F12キーを押して開発者ツールを開いてください。');
+            testAPI();
+        };
+    </script>
+</body>
+</html> 
