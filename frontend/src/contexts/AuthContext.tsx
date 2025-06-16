@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, LoginRequest, RegisterRequest } from '../types';
+import { User, LoginRequest, RegisterRequest, UserUpdateRequest } from '../types';
 import { authService } from '../services/authService';
 
 interface AuthContextType {
@@ -8,7 +8,7 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
-  updateUser: (data: Partial<User>) => Promise<void>;
+  updateUser: (data: UserUpdateRequest) => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
-  const updateUser = async (data: Partial<User>) => {
+  const updateUser = async (data: UserUpdateRequest) => {
     const updatedUser = await authService.updateUser(data);
     setUser(updatedUser);
   };

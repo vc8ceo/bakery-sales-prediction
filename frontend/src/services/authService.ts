@@ -1,4 +1,4 @@
-import { LoginRequest, RegisterRequest, AuthResponse, User } from '../types';
+import { LoginRequest, RegisterRequest, AuthResponse, User, UserUpdateRequest } from '../types';
 
 class AuthService {
   private readonly API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
@@ -91,7 +91,7 @@ class AuthService {
   }
 
   // ユーザー情報を更新
-  async updateUser(data: Partial<User>): Promise<User> {
+  async updateUser(data: UserUpdateRequest): Promise<User> {
     const response = await fetch(`${this.API_BASE_URL}/api/auth/me`, {
       method: 'PUT',
       headers: {

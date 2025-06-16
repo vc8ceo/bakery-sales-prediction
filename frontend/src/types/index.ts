@@ -15,6 +15,13 @@ export interface User {
   updated_at: string | null;
 }
 
+export interface UserUpdateRequest {
+  username?: string;
+  store_name?: string;
+  postal_code?: string;
+  password?: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
