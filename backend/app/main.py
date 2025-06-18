@@ -73,9 +73,10 @@ for index_file in potential_index_files:
 
 if not simple_html_mode:
     # 静的ファイルをルートパスで配信（CSSとJSファイルを正しく読み込むため）
-    app.mount("/css", StaticFiles(directory=os.path.join(react_build_dir, "css")), name="css")
-    app.mount("/js", StaticFiles(directory=os.path.join(react_build_dir, "js")), name="js")
-    app.mount("/static", StaticFiles(directory=react_build_dir), name="static")
+    # Reactビルドでは static/static/css と static/static/js の構造になる
+    static_dir = os.path.join(react_build_dir, "static")
+    if os.path.exists(static_dir):
+        app.mount("/static", StaticFiles(directory=static_dir), name="static")
     print(f"✅ Reactアプリを配信: {react_build_dir}")
 else:
     print("⚠️ Reactアプリが見つかりません。シンプル版で起動します。")
