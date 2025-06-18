@@ -53,19 +53,39 @@ app.include_router(auth_router)
 app.include_router(user_router)
 
 # 静的ファイル配信（本番環境用）
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+# 静的ファイルとフロントエンド配信
+static_dir = "static"
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
     
     @app.get("/", include_in_schema=False)
     async def serve_frontend():
-        return FileResponse("static/index.html")
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        else:
+            return {"message": "フロントエンドファイルが見つかりません", "static_dir": static_dir, "files": os.listdir(static_dir) if os.path.exists(static_dir) else []}
     
     @app.get("/{path:path}", include_in_schema=False)
     async def serve_frontend_routes(path: str):
-        # React RouterのSPA対応
+        # API、docs、redocパスはスキップ
         if path.startswith("api/") or path.startswith("docs") or path.startswith("redoc"):
             raise HTTPException(status_code=404, detail="Not Found")
-        return FileResponse("static/index.html")
+        
+        index_path = os.path.join(static_dir, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        else:
+            raise HTTPException(status_code=404, detail="Frontend files not found")
+else:
+    @app.get("/", include_in_schema=False)
+    async def no_frontend():
+        return {
+            "message": "フロントエンドが設定されていません", 
+            "api_docs": "/docs",
+            "current_dir": os.getcwd(),
+            "files": os.listdir(".")
+        }
 
 # グローバル変数
 data_processor = DataProcessor()
