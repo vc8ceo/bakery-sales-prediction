@@ -72,6 +72,9 @@ for index_file in potential_index_files:
         break
 
 if not simple_html_mode:
+    # 静的ファイルをルートパスで配信（CSSとJSファイルを正しく読み込むため）
+    app.mount("/css", StaticFiles(directory=os.path.join(react_build_dir, "css")), name="css")
+    app.mount("/js", StaticFiles(directory=os.path.join(react_build_dir, "js")), name="js")
     app.mount("/static", StaticFiles(directory=react_build_dir), name="static")
     print(f"✅ Reactアプリを配信: {react_build_dir}")
 else:
@@ -215,6 +218,23 @@ async def serve_frontend():
 </html>
     """
     return HTMLResponse(content=html_content)
+
+# favicon.icoとmanifest.jsonの配信
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    if not simple_html_mode:
+        favicon_path = os.path.join(react_build_dir, "favicon.ico")
+        if os.path.exists(favicon_path):
+            return FileResponse(favicon_path)
+    raise HTTPException(status_code=404, detail="Not Found")
+
+@app.get("/manifest.json", include_in_schema=False)
+async def manifest():
+    if not simple_html_mode:
+        manifest_path = os.path.join(react_build_dir, "manifest.json")
+        if os.path.exists(manifest_path):
+            return FileResponse(manifest_path)
+    raise HTTPException(status_code=404, detail="Not Found")
 
 @app.get("/{path:path}", include_in_schema=False)
 async def serve_frontend_routes(path: str):
