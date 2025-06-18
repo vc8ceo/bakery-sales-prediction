@@ -41,19 +41,20 @@ class UserDataProcessor:
         
         # 新しいデータを挿入
         for _, row in df.iterrows():
+            # 数値型の値を適切に処理（NaNをNoneに変換）
             user_data = UserData(
                 user_id=self.user_id,
-                store_id=row.get('store_id'),
-                store_name=row.get('store_name'),
+                store_id=str(row.get('store_id', 'default')),
+                store_name=str(row.get('store_name', '店舗名なし')),
                 date=row['date'],
-                weather=row.get('weather'),
-                sales=row['sales'],
-                target_achievement_rate=row.get('target_achievement_rate'),
-                yoy_same_day_ratio=row.get('yoy_same_day_ratio'),
-                customers=row['customers'],
-                avg_spending=row.get('avg_spending'),
-                labor_cost_rate=row.get('labor_cost_rate'),
-                cost_rate=row.get('cost_rate')
+                weather=str(row.get('weather', 'unknown')),
+                sales=float(row['sales']) if pd.notna(row['sales']) else 0.0,
+                target_achievement_rate=float(row.get('target_achievement_rate', 100.0)) if pd.notna(row.get('target_achievement_rate')) else 100.0,
+                yoy_same_day_ratio=float(row.get('yoy_same_day_ratio', 100.0)) if pd.notna(row.get('yoy_same_day_ratio')) else 100.0,
+                customers=int(row['customers']) if pd.notna(row['customers']) else 0,
+                avg_spending=float(row.get('avg_spending', 0.0)) if pd.notna(row.get('avg_spending')) else 0.0,
+                labor_cost_rate=float(row.get('labor_cost_rate', 30.0)) if pd.notna(row.get('labor_cost_rate')) else 30.0,
+                cost_rate=float(row.get('cost_rate', 30.0)) if pd.notna(row.get('cost_rate')) else 30.0
             )
             self.db.add(user_data)
         

@@ -37,15 +37,31 @@ class DataProcessor:
             
             df.rename(columns=column_mapping, inplace=True)
             
-            # データ型変換
-            df['date'] = pd.to_datetime(df['date'])
-            df['sales'] = pd.to_numeric(df['sales'], errors='coerce')
-            df['customers'] = pd.to_numeric(df['customers'], errors='coerce')
-            df['avg_spending'] = pd.to_numeric(df['avg_spending'], errors='coerce')
+            # データ型変換（エラーハンドリング強化）
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
             
-            # 売上が0またはNaNの行を除外
+            # 数値列の処理（カンマ区切りとパーセント記号を除去）
+            numeric_columns = ['sales', 'customers', 'avg_spending', 'target_achievement_rate', 
+                             'yoy_same_day_ratio', 'labor_cost_rate', 'cost_rate']
+            
+            for col in numeric_columns:
+                if col in df.columns:
+                    # 文字列に変換してから処理
+                    df[col] = df[col].astype(str)
+                    # カンマを除去
+                    df[col] = df[col].str.replace(',', '')
+                    # パーセント記号を除去
+                    df[col] = df[col].str.replace('%', '')
+                    # 数値に変換（エラーはNaNに）
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
+            
+            # 有効な日付のみを保持
+            df = df.dropna(subset=['date'])
+            
+            # 売上と客数が有効な行のみを保持
             df = df.dropna(subset=['sales', 'customers'])
             df = df[df['sales'] > 0]
+            df = df[df['customers'] > 0]
             
             # 天気データの正規化
             df['weather'] = df['weather'].fillna('不明')
@@ -58,6 +74,14 @@ class DataProcessor:
                 '不明': 'unknown'
             }
             df['weather'] = df['weather'].map(weather_mapping).fillna('unknown')
+            
+            # その他のNaN値を適切なデフォルト値で埋める
+            df['target_achievement_rate'] = df['target_achievement_rate'].fillna(100.0)
+            df['yoy_same_day_ratio'] = df['yoy_same_day_ratio'].fillna(100.0)
+            df['labor_cost_rate'] = df['labor_cost_rate'].fillna(30.0)
+            df['cost_rate'] = df['cost_rate'].fillna(30.0)
+            df['store_id'] = df['store_id'].fillna('default')
+            df['store_name'] = df['store_name'].fillna('店舗名なし')
             
             self.data = df
             return df
@@ -101,7 +125,7 @@ class DataProcessor:
         feature_df['prev_week_customers'] = feature_df['customers'].shift(7)
         
         # 欠損値補完
-        feature_df = feature_df.fillna(method='bfill').fillna(method='ffill')
+        feature_df = feature_df.bfill().ffill()
         
         # 特徴量とターゲットを分離
         feature_columns = [
