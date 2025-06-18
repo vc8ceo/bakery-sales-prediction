@@ -6,7 +6,15 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
+
+# デバッグ情報を追加
+RUN echo "=== フロントエンドビルド開始 ===" && ls -la
+
+# フロントエンドをビルド
 RUN npm run build
+
+# ビルド結果を確認
+RUN echo "=== ビルド完了後 ===" && ls -la build/
 
 # Python バックエンド
 FROM python:3.11-slim
@@ -30,6 +38,9 @@ COPY backend/ ./
 
 # フロントエンドのビルド結果をコピー
 COPY --from=frontend-builder /app/frontend/build ./static
+
+# 静的ファイルが正しくコピーされたか確認
+RUN echo "=== 静的ファイル確認 ===" && ls -la static/ || echo "静的ディレクトリが存在しません"
 
 # モデル保存用ディレクトリを作成
 RUN mkdir -p models/users models/trained
