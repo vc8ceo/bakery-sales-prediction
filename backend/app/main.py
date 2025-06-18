@@ -54,9 +54,24 @@ app.include_router(user_router)
 
 # 静的ファイル配信（本番環境用）
 # 静的ファイルとフロントエンド配信
+# Reactビルドファイルをチェック
+react_build_dir = "static"
+simple_html_mode = True
+
+if os.path.exists(react_build_dir) and os.path.exists(os.path.join(react_build_dir, "index.html")):
+    # Reactアプリが利用可能
+    app.mount("/static", StaticFiles(directory=react_build_dir), name="static")
+    simple_html_mode = False
+
 @app.get("/", include_in_schema=False)
 async def serve_frontend():
-    """美しいフロントエンドページを配信"""
+    """フロントエンドページを配信"""
+    
+    if not simple_html_mode:
+        # Reactアプリを配信
+        return FileResponse(os.path.join(react_build_dir, "index.html"))
+    
+    # シンプルHTML版を配信
     html_content = """
 <!DOCTYPE html>
 <html lang="ja">
@@ -118,6 +133,13 @@ async def serve_frontend():
         .api-button:hover {
             box-shadow: 0 6px 20px 0 rgba(78, 205, 196, 0.6);
         }
+        .warning {
+            background: #f39c12;
+            box-shadow: 0 4px 15px 0 rgba(243, 156, 18, 0.4);
+        }
+        .warning:hover {
+            box-shadow: 0 6px 20px 0 rgba(243, 156, 18, 0.6);
+        }
         .status {
             margin-top: 2rem;
             padding: 1rem;
@@ -137,18 +159,30 @@ async def serve_frontend():
         </div>
         
         <div class="status">
-            <h3>🚀 システム状況</h3>
+            <h3>⚠️ システム状況</h3>
             <p>✅ バックエンドAPI: 正常稼働中</p>
-            <p>✅ フロントエンド: 美しいHTML版で稼働中</p>
-            <p>🎉 Railway デプロイ成功！</p>
+            <p>⚠️ フロントエンド: シンプル版で稼働中</p>
+            <p style="color: #f39c12;">🔧 完全なReactアプリは準備中です</p>
         </div>
 
         <div class="status">
-            <h3>🛠️ 利用可能な機能</h3>
-            <p>• ユーザー登録・ログイン（API経由）</p>
-            <p>• 売上データのアップロード</p>
-            <p>• 機械学習モデルの訓練</p>
-            <p>• 売上・来店客数予測</p>
+            <h3>📋 設計書で定義された機能</h3>
+            <p>• <strong>ユーザー認証システム</strong>（ログイン・登録）</p>
+            <p>• <strong>ユーザーダッシュボード</strong>（統計・予測履歴）</p>
+            <p>• <strong>CSVアップロード機能</strong></p>
+            <p>• <strong>機械学習モデル訓練</strong></p>
+            <p>• <strong>売上予測フォーム</strong></p>
+            <p>• <strong>設定管理</strong>（店舗情報・郵便番号）</p>
+        </div>
+
+        <div class="status">
+            <h3>🛠️ 現在利用可能な機能（API経由）</h3>
+            <p>• POST /api/auth/register - ユーザー登録</p>
+            <p>• POST /api/auth/login - ログイン</p>
+            <p>• GET /api/user/dashboard - ダッシュボード</p>
+            <p>• POST /api/upload-data - データアップロード</p>
+            <p>• POST /api/train-model - モデル訓練</p>
+            <p>• POST /api/predict - 売上予測</p>
         </div>
     </div>
 
@@ -167,6 +201,20 @@ async def serve_frontend():
 </html>
     """
     return HTMLResponse(content=html_content)
+
+@app.get("/{path:path}", include_in_schema=False)
+async def serve_frontend_routes(path: str):
+    """React Router対応"""
+    # API、docs、redocパスはスキップ
+    if path.startswith("api/") or path.startswith("docs") or path.startswith("redoc"):
+        raise HTTPException(status_code=404, detail="Not Found")
+    
+    if not simple_html_mode:
+        # Reactアプリの場合、SPAルーティング対応
+        return FileResponse(os.path.join(react_build_dir, "index.html"))
+    else:
+        # シンプル版の場合はルートにリダイレクト
+        raise HTTPException(status_code=404, detail="Page not found")
 
 # グローバル変数
 data_processor = DataProcessor()
