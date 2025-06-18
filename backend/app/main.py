@@ -54,8 +54,16 @@ app.include_router(user_router)
 
 # 静的ファイル配信（本番環境用）
 # 静的ファイルとフロントエンド配信
-static_dir = "static"
-if os.path.exists(static_dir):
+# 複数の場所をチェック
+static_locations = ["static", "app/static", "./static", "./app/static"]
+static_dir = None
+
+for location in static_locations:
+    if os.path.exists(location):
+        static_dir = location
+        break
+
+if static_dir:
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
     
     @app.get("/", include_in_schema=False)
@@ -84,7 +92,8 @@ else:
             "message": "フロントエンドが設定されていません", 
             "api_docs": "/docs",
             "current_dir": os.getcwd(),
-            "files": os.listdir(".")
+            "files": os.listdir("."),
+            "checked_locations": static_locations
         }
 
 # グローバル変数
