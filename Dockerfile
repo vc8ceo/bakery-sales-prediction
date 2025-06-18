@@ -4,17 +4,27 @@ FROM node:18-alpine as frontend-builder
 # フロントエンド ビルド
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm ci
+
+# Node環境でのビルド最適化
+ENV NODE_ENV=production
+ENV GENERATE_SOURCEMAP=false
+
+RUN npm ci --production=false
+
 COPY frontend/ ./
 
 # デバッグ情報を追加
 RUN echo "=== フロントエンドビルド開始 ===" && ls -la
+RUN echo "=== package.json確認 ===" && cat package.json
+
+# APIのエンドポイントを設定
+ENV REACT_APP_API_URL=""
 
 # フロントエンドをビルド
 RUN npm run build
 
 # ビルド結果を確認
-RUN echo "=== ビルド完了後 ===" && ls -la build/
+RUN echo "=== ビルド完了後 ===" && ls -la build/ && echo "=== build/static/ ===" && ls -la build/static/ || echo "static directory not found"
 
 # Python バックエンド
 FROM python:3.11-slim

@@ -2,7 +2,8 @@ import axios from 'axios';
 import { ModelStatusType, PredictionResult, DataStats, UploadResult, TrainResult, DashboardStats, PredictionHistoryItem } from '../types';
 import { authService } from './authService';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// 本番環境では相対URLを使用、開発環境ではlocalhost
+const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
 
 const api = axios.create({
   baseURL: API_BASE_URL,

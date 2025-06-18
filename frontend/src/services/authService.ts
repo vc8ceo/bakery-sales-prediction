@@ -1,7 +1,8 @@
 import { LoginRequest, RegisterRequest, AuthResponse, User, UserUpdateRequest } from '../types';
 
 class AuthService {
-  private readonly API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  // 本番環境では相対URLを使用、開発環境ではlocalhost
+  private readonly API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
   private tokenKey = 'bakery_auth_token';
 
   // ローカルストレージからトークンを取得

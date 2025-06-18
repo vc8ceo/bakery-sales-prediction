@@ -58,10 +58,24 @@ app.include_router(user_router)
 react_build_dir = "static"
 simple_html_mode = True
 
-if os.path.exists(react_build_dir) and os.path.exists(os.path.join(react_build_dir, "index.html")):
-    # Reactアプリが利用可能
+# Reactアプリの存在確認を緩和
+potential_index_files = [
+    os.path.join(react_build_dir, "index.html"),
+    os.path.join("./static", "index.html"),
+    os.path.join("app/static", "index.html")
+]
+
+for index_file in potential_index_files:
+    if os.path.exists(index_file):
+        react_build_dir = os.path.dirname(index_file)
+        simple_html_mode = False
+        break
+
+if not simple_html_mode:
     app.mount("/static", StaticFiles(directory=react_build_dir), name="static")
-    simple_html_mode = False
+    print(f"✅ Reactアプリを配信: {react_build_dir}")
+else:
+    print("⚠️ Reactアプリが見つかりません。シンプル版で起動します。")
 
 @app.get("/", include_in_schema=False)
 async def serve_frontend():
