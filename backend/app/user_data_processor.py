@@ -222,3 +222,35 @@ class UserDataProcessor:
         processor.processed_data = self.data
         
         return processor.create_prediction_features(target_date.date(), weather_data)
+    
+    def delete_user_data(self):
+        """ユーザーデータ・モデル・ファイルを完全削除"""
+        try:
+            # データベースからデータ削除
+            self.db.query(UserData).filter(UserData.user_id == self.user_id).delete()
+            
+            # モデル情報を取得してファイル削除
+            model_info = self.db.query(UserModel).filter(UserModel.user_id == self.user_id).first()
+            if model_info and os.path.exists(model_info.model_path):
+                os.remove(model_info.model_path)
+                # ユーザーディレクトリも空なら削除
+                model_dir = os.path.dirname(model_info.model_path)
+                if os.path.exists(model_dir) and not os.listdir(model_dir):
+                    os.rmdir(model_dir)
+            
+            # データベースからモデル情報削除
+            self.db.query(UserModel).filter(UserModel.user_id == self.user_id).delete()
+            
+            # 予測履歴削除
+            from .user_models import PredictionHistory
+            self.db.query(PredictionHistory).filter(PredictionHistory.user_id == self.user_id).delete()
+            
+            self.db.commit()
+            
+            # インスタンス変数をリセット
+            self.data = None
+            self.processed_data = None
+            
+        except Exception as e:
+            self.db.rollback()
+            raise Exception(f"ユーザーデータ削除エラー: {str(e)}")

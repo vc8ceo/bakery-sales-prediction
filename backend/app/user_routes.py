@@ -221,10 +221,12 @@ async def delete_user_data(
     db: Session = Depends(get_db)
 ):
     """ユーザーデータ削除"""
-    # ユーザーのデータを削除
-    db.query(UserData).filter(UserData.user_id == current_user.id).delete()
-    db.query(PredictionHistory).filter(PredictionHistory.user_id == current_user.id).delete()
-    
-    db.commit()
-    
-    return {"message": "ユーザーデータが削除されました"}
+    try:
+        # ユーザー専用データ処理クラスで完全削除
+        from .user_data_processor import UserDataProcessor
+        user_processor = UserDataProcessor(current_user.id, db)
+        user_processor.delete_user_data()
+        
+        return {"message": "ユーザーデータが完全に削除されました"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"データ削除エラー: {str(e)}")
