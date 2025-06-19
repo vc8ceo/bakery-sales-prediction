@@ -102,14 +102,17 @@ export interface ConfidenceInterval {
 }
 
 export interface DataStats {
+  total_records?: number;
   date_range: {
-    start: string;
-    end: string;
+    start: string | null;
+    end: string | null;
   };
-  monthly_sales: Record<string, number>;
-  weekday_sales: Record<string, number>;
-  weather_impact: Record<string, number>;
-  holiday_impact: {
+  columns?: string[];
+  summary?: any;
+  monthly_sales?: Record<string, number>;
+  weekday_sales?: Record<string, number>;
+  weather_impact?: Record<string, number>;
+  holiday_impact?: {
     holiday_avg: number;
     regular_avg: number;
   };
