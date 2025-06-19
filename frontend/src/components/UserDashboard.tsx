@@ -36,7 +36,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/apiService';
 import { DashboardStats, PredictionHistoryItem } from '../types';
 
-const UserDashboard: React.FC = () => {
+interface UserDashboardProps {
+  onDeleteData?: () => Promise<{ message: string }>;
+}
+
+const UserDashboard: React.FC<UserDashboardProps> = ({ onDeleteData }) => {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [predictionHistory, setPredictionHistory] = useState<PredictionHistoryItem[]>([]);
@@ -67,9 +71,16 @@ const UserDashboard: React.FC = () => {
   const handleDeleteData = async () => {
     if (window.confirm('すべてのデータを削除しますか？この操作は取り消せません。')) {
       try {
-        await apiService.deleteUserData();
-        await loadDashboardData();
-        alert('データを削除しました');
+        if (onDeleteData) {
+          const result = await onDeleteData();
+          alert(result.message);
+          await loadDashboardData();
+        } else {
+          // フォールバック：直接APIを呼び出し
+          await apiService.deleteUserData();
+          await loadDashboardData();
+          alert('データを削除しました');
+        }
       } catch (err: any) {
         setError(err.message);
       }

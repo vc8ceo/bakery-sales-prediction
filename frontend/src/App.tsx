@@ -174,6 +174,34 @@ function MainApp() {
     }
   };
 
+  const handleDataDelete = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await apiService.deleteUserData();
+      
+      // 状態をリセット
+      setModelStatus({
+        model_trained: false,
+        data_loaded: false,
+        model_path: null
+      });
+      setDataStats(null);
+      setPredictionResult(null);
+      
+      // ダッシュボードタブに戻る
+      setTabValue(0);
+      
+      return { message: 'データを削除しました' };
+    } catch (err: any) {
+      setError(err.message || 'データ削除に失敗しました');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePredict = async (date: string, postalCode: string) => {
     setLoading(true);
     setError(null);
@@ -301,7 +329,7 @@ function MainApp() {
             </Box>
 
             <TabPanel value={tabValue} index={0}>
-              <UserDashboard />
+              <UserDashboard onDeleteData={handleDataDelete} />
             </TabPanel>
 
             <TabPanel value={tabValue} index={1}>

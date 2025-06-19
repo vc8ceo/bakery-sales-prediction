@@ -29,18 +29,29 @@ interface DataUploadProps {
   onTrain: () => Promise<TrainResult>;
   modelStatus: ModelStatusType | null;
   loading: boolean;
+  onReset?: () => void; // リセット用のコールバックを追加
 }
 
 const DataUpload: React.FC<DataUploadProps> = ({
   onUpload,
   onTrain,
   modelStatus,
-  loading
+  loading,
+  onReset
 }) => {
   const [dragOver, setDragOver] = useState(false);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [trainResult, setTrainResult] = useState<TrainResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // データが削除された場合にローカル状態をリセット
+  React.useEffect(() => {
+    if (!modelStatus?.data_loaded) {
+      setUploadResult(null);
+      setTrainResult(null);
+      setError(null);
+    }
+  }, [modelStatus?.data_loaded]);
 
   const activeStep = modelStatus?.data_loaded 
     ? (modelStatus.model_trained ? 2 : 1) 
