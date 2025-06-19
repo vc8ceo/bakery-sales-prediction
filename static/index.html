@@ -1,1 +1,36 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="パン屋の売上予測システム"/><link rel="apple-touch-icon" href="/logo192.png"/><link rel="manifest" href="/manifest.json"/><title>パン屋売上予測システム</title><script defer="defer" src="/static/js/main.c8216599.js"></script><link href="/static/css/main.1f39d3a5.css" rel="stylesheet"></head><body><noscript>JavaScriptを有効にしてください。</noscript><div id="root"></div></body></html>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="パン屋の売上予測システム"/><link rel="apple-touch-icon" href="/logo192.png"/><link rel="manifest" href="/manifest.json"/><title>パン屋売上予測システム</title><script defer="defer" src="/static/js/main.c8216599.js"></script><link href="/static/css/main.1f39d3a5.css" rel="stylesheet"></head><body><noscript>JavaScriptを有効にしてください。</noscript><div id="root"></div><script>
+// タブ有効化の修正
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    // データアップロード成功後にタブを有効化
+    const enableTabs = function() {
+      const tabs = document.querySelectorAll('[role="tab"]');
+      if (tabs.length > 2) {
+        // データ統計タブを有効にする
+        const dataStatsTab = tabs[2];
+        if (dataStatsTab) {
+          dataStatsTab.removeAttribute('disabled');
+          dataStatsTab.setAttribute('aria-disabled', 'false');
+          dataStatsTab.style.opacity = '1';
+          dataStatsTab.style.pointerEvents = 'auto';
+        }
+      }
+    };
+    
+    // 定期的にタブの状態をチェック
+    setInterval(enableTabs, 2000);
+    
+    // CSVアップロードボタンにイベントリスナーを追加
+    const checkForUploadSuccess = function() {
+      const uploadButton = document.querySelector('input[type="file"]');
+      if (uploadButton) {
+        uploadButton.addEventListener('change', function() {
+          setTimeout(enableTabs, 3000); // アップロード後3秒で有効化
+        });
+      }
+    };
+    
+    setTimeout(checkForUploadSuccess, 1000);
+  }, 2000);
+});
+</script></body></html>
