@@ -181,28 +181,45 @@ function MainApp() {
     try {
       await apiService.deleteUserData();
       
-      // 状態をリセット
-      setModelStatus({
+      // 状態をリセット（即座に実行）
+      const resetModelStatus = {
         model_trained: false,
         data_loaded: false,
         model_path: null
-      });
+      };
+      
+      setModelStatus(resetModelStatus);
       setDataStats(null);
       setPredictionResult(null);
       
+      console.log('Data deleted, immediate state reset:', resetModelStatus);
+      
       // サーバーから最新のモデル状況を再取得（確実な状態同期のため）
-      await loadModelStatus();
+      try {
+        await loadModelStatus();
+        console.log('Model status reloaded from server after deletion');
+      } catch (loadError) {
+        console.warn('Failed to reload model status, keeping reset state:', loadError);
+        // サーバーからの取得に失敗した場合はリセット状態を保持
+      }
       
-      // ダッシュボードタブに戻る
-      setTabValue(0);
+      // データアップロードタブに移動（ユーザーが即座に再アップロードできるように）
+      setTabValue(1);
       
-      console.log('Data deleted, model status reset:', {
-        model_trained: false,
-        data_loaded: false
-      });
+      // 追加の状態確認（Railway環境対応）
+      setTimeout(() => {
+        console.log('Final state check after deletion:', {
+          modelStatus: resetModelStatus,
+          tabValue: 1, // データアップロードタブ
+          dataStats: null
+        });
+        // さらに確実にするため、状態を再設定
+        setModelStatus(resetModelStatus);
+      }, 100);
       
       return { message: 'データを削除しました' };
     } catch (err: any) {
+      console.error('Data deletion failed:', err);
       setError(err.message || 'データ削除に失敗しました');
       throw err;
     } finally {

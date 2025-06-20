@@ -55,6 +55,17 @@ const DataUpload: React.FC<DataUploadProps> = ({
     }
   }, [modelStatus?.data_loaded]);
 
+  // コンポーネントマウント時の初期化（Railway環境対応）
+  React.useEffect(() => {
+    console.log('DataUpload: Component mounted/re-mounted with modelStatus:', modelStatus);
+    // モデル状況が未読み込みの場合は確実にクリーンな状態にする
+    if (!modelStatus?.data_loaded) {
+      setUploadResult(null);
+      setTrainResult(null);
+      setError(null);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const activeStep = modelStatus?.data_loaded 
     ? (modelStatus.model_trained ? 2 : 1) 
     : 0;
