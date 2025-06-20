@@ -190,8 +190,16 @@ function MainApp() {
       setDataStats(null);
       setPredictionResult(null);
       
+      // サーバーから最新のモデル状況を再取得（確実な状態同期のため）
+      await loadModelStatus();
+      
       // ダッシュボードタブに戻る
       setTabValue(0);
+      
+      console.log('Data deleted, model status reset:', {
+        model_trained: false,
+        data_loaded: false
+      });
       
       return { message: 'データを削除しました' };
     } catch (err: any) {
@@ -334,6 +342,7 @@ function MainApp() {
 
             <TabPanel value={tabValue} index={1}>
               <DataUpload 
+                key={`data-upload-${modelStatus?.data_loaded}`}
                 onUpload={handleDataUpload}
                 onTrain={handleModelTrain}
                 modelStatus={modelStatus}

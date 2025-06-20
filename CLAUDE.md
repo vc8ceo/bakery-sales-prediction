@@ -182,14 +182,53 @@ npm install
 npm start  # port 3000
 ```
 
+### 開発コマンド
+
+#### バックエンド
+```bash
+# 開発サーバー起動
+cd backend
+uvicorn app.main:app --reload --port 8000
+
+# 本番起動（ポート環境変数対応）
+uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+
+# 依存関係インストール
+pip install -r requirements.txt
+
+# データベースマイグレーション（将来実装時）
+# alembic upgrade head
+```
+
+#### フロントエンド
+```bash
+# 開発サーバー起動
+cd frontend
+npm start
+
+# 本番ビルド
+npm run build
+
+# テスト実行
+npm test
+
+# TypeScriptコンパイル確認
+npx tsc --noEmit
+
+# ESLint実行
+npx eslint src/ --ext .ts,.tsx
+```
+
 ### 本番ビルド・デプロイ
 ```bash
 # フロントエンドビルド
 cd frontend
 npm run build
 
-# 静的ファイルコピー
+# 静的ファイルコピー（Windows）
 xcopy /E /I /Y frontend\build static
+# または（Linux/Mac）
+cp -r frontend/build/* static/
 
 # Docker ビルド
 docker build -t bakery-app .
@@ -224,11 +263,13 @@ git push origin main  # 自動デプロイ
 - **認証**: React Context（グローバル）
 - **データ**: ローカル状態 + API通信
 - **エラーハンドリング**: 統一エラー表示・401自動ログアウト
+- **コンポーネント再レンダリング**: key prop による強制再レンダリング機能
 
 ### デバッグ機能
 - **APIエラーでもタブ有効化**: フロントエンドフォールバック
-- **データ削除後の状態リセット**: モデル状況・ローカル状態クリア
-- **インラインスクリプト**: HTMLレベルでの動的修正対応
+- **データ削除後の状態リセット**: モデル状況・ローカル状態クリア + 強制再レンダリング
+- **コンソールログ**: 開発・本番環境でのデバッグ用ログ出力
+- **Railway環境対応**: 本番環境でのデバッグログ機能
 
 ## 最近の重要な修正
 
@@ -240,6 +281,7 @@ git push origin main  # 自動デプロイ
 ### データ削除後の状態リセット
 - **問題**: データ削除後にCSVアップロードボタンが非表示
 - **解決**: `handleDataDelete`でモデル状況を初期化、DataUploadコンポーネントで状態リセット
+- **最新修正**: DataUploadにkey prop追加による強制再レンダリング、`loadModelStatus()`による確実な状態同期
 
 ### デプロイ課題
 - **問題**: Railway デプロイメント失敗
@@ -251,16 +293,56 @@ git push origin main  # 自動デプロイ
 - ✅ ユーザー認証（登録・ログイン）
 - ✅ CSVデータアップロード
 - ✅ ダッシュボード表示
-- ✅ データ削除・状態リセット
+- ✅ データ削除・状態リセット（Railway環境対応済み）
 - ✅ 基本的なAPI通信
+- ✅ フロントエンドタブ切り替え機能
+- ✅ コンポーネント状態管理・強制再レンダリング
 
 ### 開発中・課題
 - ⚠️ Railway デプロイメント安定化
 - ⚠️ バックエンドAPIエンドポイント（model-status, data-stats）
 - 🔄 モデル訓練・予測機能の完全動作確認
+- 🔄 テストコードの実装
 
 ### 技術的考慮事項
 - **ファイルシステム**: `models/users/`, `models/trained/` ディレクトリ必須
 - **環境検出**: 自動データベース選択ロジック
 - **CORS設定**: 開発・本番環境適応
 - **静的ファイル配信**: React SPAルーティング対応
+- **状態管理パターン**: key prop による強制再レンダリング
+- **API エラーハンドリング**: フォールバック機能付き
+- **多段階ビルド**: Docker でのフロントエンド・バックエンド統合
+
+## 重要な実装パターン
+
+### React コンポーネント強制再レンダリング
+```typescript
+// App.tsx で使用されるパターン
+<DataUpload 
+  key={`data-upload-${modelStatus?.data_loaded}`}
+  // ... other props
+/>
+```
+
+### API エラーハンドリングパターン
+```typescript
+// apiService.ts で使用されるパターン
+try {
+  const response = await api.get('/api/endpoint');
+  return response.data;
+} catch (error) {
+  // フォールバック処理
+  return defaultData;
+}
+```
+
+### 環境別データベース設定
+```python
+# database.py の環境自動検出パターン
+if os.getenv('PGHOST') and os.getenv('PGPORT'):
+    # Railway PostgreSQL
+    DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{database}"
+elif os.getenv('ENVIRONMENT') == 'development':
+    # SQLite for development
+    DATABASE_URL = "sqlite:///./bakery.db"
+```

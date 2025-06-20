@@ -74,6 +74,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onDeleteData }) => {
         if (onDeleteData) {
           const result = await onDeleteData();
           alert(result.message);
+          // データ削除後はダッシュボードを再読み込み
           await loadDashboardData();
         } else {
           // フォールバック：直接APIを呼び出し

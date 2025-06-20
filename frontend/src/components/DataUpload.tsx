@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   Box,
   Button,
@@ -43,13 +43,21 @@ const DataUpload: React.FC<DataUploadProps> = ({
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
   const [trainResult, setTrainResult] = useState<TrainResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null); // ファイル入力のrefを追加
 
   // データが削除された場合にローカル状態をリセット
   React.useEffect(() => {
+    console.log('DataUpload: modelStatus changed', modelStatus);
     if (!modelStatus?.data_loaded) {
+      console.log('DataUpload: Resetting component state (data_loaded = false)');
       setUploadResult(null);
       setTrainResult(null);
       setError(null);
+      
+      // ファイル入力フィールドもリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   }, [modelStatus?.data_loaded]);
 
@@ -85,6 +93,11 @@ const DataUpload: React.FC<DataUploadProps> = ({
       setUploadResult(result);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      // ドロップ処理後にもファイル入力をリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   }, [onUpload]);
 
@@ -103,6 +116,11 @@ const DataUpload: React.FC<DataUploadProps> = ({
       setUploadResult(result);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      // アップロード処理後にファイル入力をリセット（同じファイルの再選択を可能にする）
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -153,6 +171,7 @@ const DataUpload: React.FC<DataUploadProps> = ({
                 onChange={handleFileSelect}
                 style={{ display: 'none' }}
                 id="file-upload"
+                ref={fileInputRef}
                 disabled={loading}
               />
               <label htmlFor="file-upload">
