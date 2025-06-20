@@ -87,23 +87,32 @@ function MainApp() {
 
   const loadModelStatus = async () => {
     try {
+      console.log('モデル状況を取得中...');
       const status = await apiService.getModelStatus();
+      console.log('モデル状況取得成功:', status);
       setModelStatus(status);
       
       if (status.data_loaded) {
+        console.log('データが読み込まれているため、データ統計を取得します...');
         try {
           const stats = await apiService.getDataStats();
+          console.log('データ統計取得成功:', stats);
           setDataStats(stats);
         } catch (statsErr) {
           console.error('データ統計取得エラー:', statsErr);
           // APIエラーでもダミーデータで継続
-          setDataStats({
+          const fallbackStats = {
             total_records: 0,
             date_range: { start: null, end: null },
             columns: [],
             summary: {}
-          });
+          };
+          console.log('フォールバック統計データを使用:', fallbackStats);
+          setDataStats(fallbackStats);
         }
+      } else {
+        console.log('データが読み込まれていないため、データ統計をクリア');
+        setDataStats(null);
       }
     } catch (err) {
       console.error('モデル状況取得エラー:', err);
@@ -161,12 +170,30 @@ function MainApp() {
     setError(null);
     
     try {
+      console.log('モデル訓練開始...');
       const result = await apiService.trainModel();
+      console.log('モデル訓練完了:', result);
+      
+      // モデル状況を更新（データ統計も含む）
+      console.log('モデル状況とデータ統計を取得中...');
       await loadModelStatus();
-      setTabValue(2); // 予測タブに移動
+      
+      // 念のため、直接データ統計も取得
+      try {
+        const stats = await apiService.getDataStats();
+        console.log('データ統計取得成功:', stats);
+        setDataStats(stats);
+      } catch (statsErr) {
+        console.warn('データ統計の直接取得に失敗:', statsErr);
+      }
+      
+      // データ統計タブに移動
+      console.log('データ統計タブ(index:2)に移動');
+      setTabValue(2);
       
       return result;
     } catch (err: any) {
+      console.error('モデル訓練エラー:', err);
       setError(err.message || 'モデル訓練に失敗しました');
       throw err;
     } finally {

@@ -6,7 +6,8 @@
       "Bash(python3:*)",
       "Bash(ls:*)",
       "Bash(npm run build:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

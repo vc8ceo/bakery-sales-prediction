@@ -229,10 +229,21 @@ class DataProcessor:
         holiday_avg = float(holiday_data.mean()) if len(holiday_data) > 0 and not holiday_data.isna().all() else 0.0
         regular_avg = float(regular_data.mean()) if len(regular_data) > 0 and not regular_data.isna().all() else 0.0
         
+        # 基本統計情報を追加
+        sales_stats = df['sales'].describe().to_dict()
+        customers_stats = df['customers'].describe().to_dict()
+        
         return {
+            'total_records': len(df),
             'date_range': {
                 'start': df['date'].min().strftime('%Y-%m-%d'),
                 'end': df['date'].max().strftime('%Y-%m-%d')
+            },
+            'columns': df.columns.tolist(),
+            'summary': {
+                'sales_stats': sales_stats,
+                'customers_stats': customers_stats,
+                'data_count': len(df)
             },
             'monthly_sales': df.groupby(df['date'].dt.month)['sales'].mean().to_dict(),
             'weekday_sales': df.groupby('weekday')['sales'].mean().to_dict(),
